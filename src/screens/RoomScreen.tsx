@@ -24,6 +24,8 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const overflow = room.participants.length - visible.length;
 
   const ringSize = SPINNER_SIZE + GAP * 2 + SQUARE_SIZE;
+  const pad = SQUARE_SIZE / 2;
+  const containerSize = ringSize + SQUARE_SIZE;
 
   const positions = useMemo(() => {
     const n = visible.length;
@@ -44,10 +46,10 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
     });
 
     return points.map(({ x, y }) => ({
-      left: x - SQUARE_SIZE / 2,
-      top: y - SQUARE_SIZE / 2,
+      left: x + pad - SQUARE_SIZE / 2,
+      top: y + pad - SQUARE_SIZE / 2,
     }));
-  }, [visible.length, ringSize]);
+  }, [visible.length, ringSize, pad]);
 
   const winner = room.participants.find((p) => p.id === winnerId);
 
@@ -78,7 +80,7 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
         <Text style={styles.prize}>🎁 {room.prize}</Text>
         <Text style={styles.count}>{room.participants.length} joined</Text>
 
-        <View style={[styles.ring, { width: ringSize, height: ringSize }]}>
+        <View style={[styles.ring, { width: containerSize, height: containerSize }]}>
           {visible.map((p, i) => (
             <ParticipantSquare
               key={p.id}
@@ -88,7 +90,12 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
               style={[styles.squarePos, positions[i]]}
             />
           ))}
-          <View style={styles.spinnerCenter}>
+          <View
+            style={[
+              styles.spinnerCenter,
+              { left: containerSize / 2 - SPINNER_SIZE / 2, top: containerSize / 2 - SPINNER_SIZE / 2 },
+            ]}
+          >
             <Spinner
               size={SPINNER_SIZE}
               spinning={spinning}
@@ -98,6 +105,8 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
             />
           </View>
         </View>
+
+        <Text style={styles.hint}>{isHost ? 'Tap the center block to spin' : 'Waiting for host to spin'}</Text>
 
         {overflow > 0 && <Text style={styles.overflow}>+{overflow} more participants</Text>}
 
@@ -134,14 +143,9 @@ const styles = StyleSheet.create({
   count: { color: '#888', fontSize: 13, marginTop: 4, marginBottom: 24 },
   ring: { position: 'relative' },
   squarePos: { position: 'absolute' },
-  spinnerCenter: {
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    marginLeft: -SPINNER_SIZE / 2,
-    marginTop: -SPINNER_SIZE / 2,
-  },
-  overflow: { color: '#888', fontSize: 13, marginTop: 16 },
+  spinnerCenter: { position: 'absolute' },
+  hint: { color: '#666', fontSize: 13, marginTop: 18 },
+  overflow: { color: '#888', fontSize: 13, marginTop: 6 },
   resultBanner: { marginTop: 28, alignItems: 'center', gap: 12 },
   resultText: { color: '#fff', fontSize: 20, fontWeight: '800' },
   postButton: {

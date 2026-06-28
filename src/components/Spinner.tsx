@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 type Props = {
   size: number;
@@ -30,41 +30,25 @@ export default function Spinner({ size, spinning, onSpinComplete, canSpin, onPre
   });
 
   return (
-    <View style={styles.wrapper}>
-      <TouchableOpacity
-        disabled={!canSpin || spinning}
-        onPress={onPress}
-        style={[styles.dialWrapper, { width: size, height: size }]}
+    <TouchableOpacity disabled={!canSpin || spinning} onPress={onPress} activeOpacity={0.7}>
+      <Animated.View
+        style={[
+          styles.block,
+          { width: size, height: size, borderRadius: size * 0.18, transform: [{ rotate: spin }] },
+        ]}
       >
-        <View style={styles.pointer} />
-        <Animated.View
-          style={[
-            styles.dial,
-            { width: size, height: size, borderRadius: size * 0.18, transform: [{ rotate: spin }] },
-          ]}
-        >
-          <View style={styles.grid}>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <View key={i} style={styles.cell} />
-            ))}
-          </View>
-        </Animated.View>
-      </TouchableOpacity>
-      <Text style={styles.label}>{spinning ? 'Spinning…' : canSpin ? 'Tap to Spin' : 'Waiting for host'}</Text>
-    </View>
+        <View style={styles.grid}>
+          {Array.from({ length: 9 }).map((_, i) => (
+            <View key={i} style={styles.cell} />
+          ))}
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    gap: 10,
-  },
-  dialWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dial: {
+  block: {
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
@@ -81,23 +65,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     borderWidth: 2,
     borderColor: '#fff',
-  },
-  pointer: {
-    position: 'absolute',
-    top: -8,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 9,
-    borderRightWidth: 9,
-    borderBottomWidth: 14,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#fff',
-    zIndex: 2,
-  },
-  label: {
-    color: '#888',
-    fontSize: 13,
-    fontWeight: '700',
   },
 });
