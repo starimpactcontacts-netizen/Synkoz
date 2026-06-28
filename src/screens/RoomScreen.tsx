@@ -4,9 +4,9 @@ import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
 import { Room } from '../data/types';
 
-const MAX_VISIBLE_SQUARES = 30;
+const MAX_VISIBLE_SQUARES = 28;
 const SPINNER_SIZE = 110;
-const SQUARE_SIZE = 34;
+const SQUARE_SIZE = 32;
 
 type Props = {
   room: Room;
@@ -23,33 +23,31 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const visible = room.participants.slice(0, MAX_VISIBLE_SQUARES);
   const overflow = room.participants.length - visible.length;
 
-  const ringSize = Math.min(width - 32, 360);
-  const perimeter = ringSize * 4;
+  const ringSize = Math.min(width - 32, 320);
 
   const positions = useMemo(() => {
-    return visible.map((_, i) => {
-      const d = (i * perimeter) / visible.length;
-      let x: number;
-      let y: number;
-      if (d < ringSize) {
-        x = d;
-        y = 0;
-      } else if (d < ringSize * 2) {
-        x = ringSize;
-        y = d - ringSize;
-      } else if (d < ringSize * 3) {
-        x = ringSize - (d - ringSize * 2);
-        y = ringSize;
-      } else {
-        x = 0;
-        y = ringSize - (d - ringSize * 3);
+    const n = visible.length;
+    const base = Math.floor(n / 4);
+    const remainder = n % 4;
+    const counts = [0, 1, 2, 3].map((side) => base + (side < remainder ? 1 : 0));
+
+    const points: { x: number; y: number }[] = [];
+    counts.forEach((count, side) => {
+      for (let k = 0; k < count; k++) {
+        const frac = (k + 0.5) / count;
+        const d = frac * ringSize;
+        if (side === 0) points.push({ x: d, y: 0 });
+        else if (side === 1) points.push({ x: ringSize, y: d });
+        else if (side === 2) points.push({ x: ringSize - d, y: ringSize });
+        else points.push({ x: 0, y: ringSize - d });
       }
-      return {
-        left: x - SQUARE_SIZE / 2,
-        top: y - SQUARE_SIZE / 2,
-      };
     });
-  }, [visible.length, ringSize, perimeter]);
+
+    return points.map(({ x, y }) => ({
+      left: x - SQUARE_SIZE / 2,
+      top: y - SQUARE_SIZE / 2,
+    }));
+  }, [visible.length, ringSize]);
 
   const winner = room.participants.find((p) => p.id === winnerId);
 
