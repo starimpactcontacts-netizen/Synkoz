@@ -1,13 +1,13 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
 import { Room } from '../data/types';
 
-const MAX_VISIBLE_SQUARES = 9;
-const SQUARE_SIZE = 64;
-const SPINNER_SIZE = SQUARE_SIZE;
-const GAP = 10;
+const MAX_VISIBLE_SQUARES = 8;
+const CELL_SIZE = 76;
+const GRID_GAP = 4;
+const CENTER_INDEX = 4;
 
 type Props = {
   room: Room;
@@ -22,34 +22,6 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
 
   const visible = room.participants.slice(0, MAX_VISIBLE_SQUARES);
   const overflow = room.participants.length - visible.length;
-
-  const ringSize = SPINNER_SIZE + GAP * 2 + SQUARE_SIZE;
-  const pad = SQUARE_SIZE / 2;
-  const containerSize = ringSize + SQUARE_SIZE;
-
-  const positions = useMemo(() => {
-    const n = visible.length;
-    const base = Math.floor(n / 4);
-    const remainder = n % 4;
-    const counts = [0, 1, 2, 3].map((side) => base + (side < remainder ? 1 : 0));
-
-    const points: { x: number; y: number }[] = [];
-    counts.forEach((count, side) => {
-      for (let k = 0; k < count; k++) {
-        const frac = (k + 0.5) / count;
-        const d = frac * ringSize;
-        if (side === 0) points.push({ x: d, y: 0 });
-        else if (side === 1) points.push({ x: ringSize, y: d });
-        else if (side === 2) points.push({ x: ringSize - d, y: ringSize });
-        else points.push({ x: 0, y: ringSize - d });
-      }
-    });
-
-    return points.map(({ x, y }) => ({
-      left: x + pad - SQUARE_SIZE / 2,
-      top: y + pad - SQUARE_SIZE / 2,
-    }));
-  }, [visible.length, ringSize, pad]);
 
   const winner = room.participants.find((p) => p.id === winnerId);
 
@@ -80,30 +52,32 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
         <Text style={styles.prize}>🎁 {room.prize}</Text>
         <Text style={styles.count}>{room.participants.length} joined</Text>
 
-        <View style={[styles.ring, { width: containerSize, height: containerSize }]}>
-          {visible.map((p, i) => (
-            <ParticipantSquare
-              key={p.id}
-              participant={p}
-              size={SQUARE_SIZE}
-              highlighted={p.id === winnerId}
-              style={[styles.squarePos, positions[i]]}
-            />
-          ))}
-          <View
-            style={[
-              styles.spinnerCenter,
-              { left: containerSize / 2 - SPINNER_SIZE / 2, top: containerSize / 2 - SPINNER_SIZE / 2 },
-            ]}
-          >
-            <Spinner
-              size={SPINNER_SIZE}
-              spinning={spinning}
-              canSpin={isHost}
-              onPress={handleSpinPress}
-              onSpinComplete={handleSpinComplete}
-            />
-          </View>
+        <View style={[styles.grid, { width: CELL_SIZE * 3 + GRID_GAP * 2 }]}>
+          {Array.from({ length: 9 }).map((_, cellIndex) => {
+            if (cellIndex === CENTER_INDEX) {
+              return (
+                <Spinner
+                  key="spinner"
+                  size={CELL_SIZE}
+                  spinning={spinning}
+                  canSpin={isHost}
+                  onPress={handleSpinPress}
+                  onSpinComplete={handleSpinComplete}
+                />
+              );
+            }
+            const participantIndex = cellIndex < CENTER_INDEX ? cellIndex : cellIndex - 1;
+            const p = visible[participantIndex];
+            if (!p) return <View key={`empty-${cellIndex}`} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
+            return (
+              <ParticipantSquare
+                key={p.id}
+                participant={p}
+                size={CELL_SIZE}
+                highlighted={p.id === winnerId}
+              />
+            );
+          })}
         </View>
 
         <Text style={styles.hint}>{isHost ? 'Tap the center block to spin' : 'Waiting for host to spin'}</Text>
@@ -141,9 +115,11 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 24, fontWeight: '800', marginTop: 16, textAlign: 'center' },
   prize: { color: '#fff', fontSize: 16, marginTop: 6 },
   count: { color: '#888', fontSize: 13, marginTop: 4, marginBottom: 24 },
-  ring: { position: 'relative' },
-  squarePos: { position: 'absolute' },
-  spinnerCenter: { position: 'absolute' },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GRID_GAP,
+  },
   hint: { color: '#666', fontSize: 13, marginTop: 18 },
   overflow: { color: '#888', fontSize: 13, marginTop: 6 },
   resultBanner: { marginTop: 28, alignItems: 'center', gap: 12 },
