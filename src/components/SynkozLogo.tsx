@@ -8,30 +8,29 @@ type Props = {
   color?: string;
 };
 
-// Hand-drawn, outlined block-letter silhouettes tracing the Synkoz wordmark:
-// S Y N K [tilted 3x3 grid] Z. Letters are intentionally irregular/slanted to
-// match the sketched outline style of the brand mark. Each glyph is authored in
-// a roughly 0..150 wide, 18..222 tall box and laid out left to right.
+// Outlined, hand-drawn block-letter silhouettes tracing the Synkoz wordmark:
+// S Y N K [tilted 3x3 grid] Z. Letters are irregular/slanted with a protruding
+// foot on the S and wide splayed Y to match the sketched brand mark.
 const GLYPHS: Record<string, string> = {
-  S: 'M4 30 L152 18 L150 64 L50 70 L44 96 L148 92 L156 214 L6 222 L2 176 L106 178 L110 140 L0 146 Z',
-  Y: 'M-6 16 L54 22 L78 86 L100 20 L162 14 L104 122 L102 224 L52 220 L54 120 Z',
-  N: 'M2 22 L50 18 L106 150 L104 18 L156 16 L152 220 L102 224 L48 92 L46 224 L-2 220 Z',
-  K: 'M0 22 L50 18 L48 100 L112 16 L160 18 L84 120 L158 222 L110 226 L48 142 L46 222 L-2 220 Z',
-  Z: 'M2 18 L158 12 L160 60 L92 168 L160 168 L162 222 L4 226 L0 176 L70 70 L2 74 Z',
+  S: 'M30 26 L150 16 L152 64 L54 70 L52 96 L150 92 L156 212 L-8 224 L-6 176 L104 178 L106 142 L20 146 Z',
+  Y: 'M-12 12 L52 20 L80 88 L102 18 L168 8 L106 120 L104 226 L52 222 L56 118 Z',
+  N: 'M2 22 L52 16 L110 150 L108 16 L160 12 L156 220 L104 226 L48 92 L44 224 L-2 218 Z',
+  K: 'M0 20 L52 16 L50 100 L116 14 L166 16 L86 118 L164 224 L112 228 L48 142 L46 224 L-4 218 Z',
+  Z: 'M0 14 L166 6 L168 58 L94 166 L168 164 L170 224 L2 230 L-2 174 L72 68 L0 72 Z',
 };
 
-// Left x-offset and per-glyph rotation (deg) to give the row a sketched, uneven feel.
+// Left x-offset and per-glyph rotation (deg) for an uneven, sketched row.
 const LAYOUT: { key: keyof typeof GLYPHS | 'grid'; x: number; rot: number }[] = [
-  { key: 'S', x: 0, rot: 1.5 },
-  { key: 'Y', x: 175, rot: -2.5 },
-  { key: 'N', x: 350, rot: 1 },
-  { key: 'K', x: 520, rot: -2 },
-  { key: 'grid', x: 695, rot: -8 },
-  { key: 'Z', x: 920, rot: 2 },
+  { key: 'S', x: 0, rot: 2 },
+  { key: 'Y', x: 175, rot: -2 },
+  { key: 'N', x: 360, rot: 2 },
+  { key: 'K', x: 530, rot: -1 },
+  { key: 'grid', x: 705, rot: 7 },
+  { key: 'Z', x: 935, rot: 2 },
 ];
 
-const VIEW_W = 1130;
-const VIEW_H = 240;
+const VIEW_W = 1140;
+const VIEW_H = 245;
 
 export default function SynkozLogo({ size = 22, color = '#fff' }: Props) {
   const width = size * (VIEW_W / VIEW_H);
@@ -46,7 +45,7 @@ export default function SynkozLogo({ size = 22, color = '#fff' }: Props) {
   const cellY = [50, 93, 136];
 
   return (
-    <Svg width={width} height={size} viewBox={`-10 0 ${VIEW_W} ${VIEW_H}`}>
+    <Svg width={width} height={size} viewBox={`-15 0 ${VIEW_W} ${VIEW_H}`}>
       {LAYOUT.map(({ key, x, rot }) =>
         key === 'grid' ? (
           // The "O": a slightly tilted square enclosing a 3x3 grid of squares.
