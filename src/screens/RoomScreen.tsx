@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
 import { Room } from '../data/types';
 
-const MAX_VISIBLE_SQUARES = 28;
-const SPINNER_SIZE = 110;
-const SQUARE_SIZE = 32;
+const MAX_VISIBLE_SQUARES = 9;
+const SQUARE_SIZE = 64;
+const SPINNER_SIZE = SQUARE_SIZE;
+const GAP = 10;
 
 type Props = {
   room: Room;
@@ -15,7 +16,6 @@ type Props = {
 };
 
 export default function RoomScreen({ room, isHost, onBack }: Props) {
-  const { width } = useWindowDimensions();
   const [spinning, setSpinning] = useState(false);
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [posted, setPosted] = useState(false);
@@ -23,7 +23,7 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const visible = room.participants.slice(0, MAX_VISIBLE_SQUARES);
   const overflow = room.participants.length - visible.length;
 
-  const ringSize = Math.min(width - 32, 320);
+  const ringSize = SPINNER_SIZE + GAP * 2 + SQUARE_SIZE;
 
   const positions = useMemo(() => {
     const n = visible.length;
