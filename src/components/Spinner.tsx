@@ -30,31 +30,37 @@ export default function Spinner({ size, spinning, onSpinComplete, canSpin, onPre
   });
 
   return (
-    <TouchableOpacity
-      disabled={!canSpin || spinning}
-      onPress={onPress}
-      style={[styles.wrapper, { width: size, height: size }]}
-    >
-      <View style={styles.pointer} />
-      <Animated.View
-        style={[
-          styles.dial,
-          { width: size, height: size, borderRadius: size / 2, transform: [{ rotate: spin }] },
-        ]}
+    <View style={styles.wrapper}>
+      <TouchableOpacity
+        disabled={!canSpin || spinning}
+        onPress={onPress}
+        style={[styles.dialWrapper, { width: size, height: size }]}
       >
-        <View style={styles.grid}>
-          {Array.from({ length: 9 }).map((_, i) => (
-            <View key={i} style={styles.cell} />
-          ))}
-        </View>
-      </Animated.View>
-      <Text style={styles.label}>{spinning ? 'Spinning…' : canSpin ? 'Spin' : 'Waiting'}</Text>
-    </TouchableOpacity>
+        <View style={styles.pointer} />
+        <Animated.View
+          style={[
+            styles.dial,
+            { width: size, height: size, borderRadius: size * 0.18, transform: [{ rotate: spin }] },
+          ]}
+        >
+          <View style={styles.grid}>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <View key={i} style={styles.cell} />
+            ))}
+          </View>
+        </Animated.View>
+      </TouchableOpacity>
+      <Text style={styles.label}>{spinning ? 'Spinning…' : canSpin ? 'Tap to Spin' : 'Waiting for host'}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
+    alignItems: 'center',
+    gap: 10,
+  },
+  dialWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -62,11 +68,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'absolute',
   },
   grid: {
-    width: '46%',
-    height: '46%',
+    width: '54%',
+    height: '54%',
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
@@ -79,21 +84,20 @@ const styles = StyleSheet.create({
   },
   pointer: {
     position: 'absolute',
-    top: -6,
+    top: -8,
     width: 0,
     height: 0,
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 16,
+    borderLeftWidth: 9,
+    borderRightWidth: 9,
+    borderBottomWidth: 14,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderBottomColor: '#fff',
     zIndex: 2,
   },
   label: {
-    position: 'absolute',
-    color: '#000',
-    fontWeight: '800',
-    fontSize: 12,
+    color: '#888',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

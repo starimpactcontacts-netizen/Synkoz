@@ -24,17 +24,32 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const overflow = room.participants.length - visible.length;
 
   const ringSize = Math.min(width - 32, 360);
-  const radius = ringSize / 2 - SQUARE_SIZE / 2;
+  const perimeter = ringSize * 4;
 
   const positions = useMemo(() => {
     return visible.map((_, i) => {
-      const angle = (2 * Math.PI * i) / visible.length - Math.PI / 2;
+      const d = (i * perimeter) / visible.length;
+      let x: number;
+      let y: number;
+      if (d < ringSize) {
+        x = d;
+        y = 0;
+      } else if (d < ringSize * 2) {
+        x = ringSize;
+        y = d - ringSize;
+      } else if (d < ringSize * 3) {
+        x = ringSize - (d - ringSize * 2);
+        y = ringSize;
+      } else {
+        x = 0;
+        y = ringSize - (d - ringSize * 3);
+      }
       return {
-        left: ringSize / 2 + radius * Math.cos(angle) - SQUARE_SIZE / 2,
-        top: ringSize / 2 + radius * Math.sin(angle) - SQUARE_SIZE / 2,
+        left: x - SQUARE_SIZE / 2,
+        top: y - SQUARE_SIZE / 2,
       };
     });
-  }, [visible.length, ringSize, radius]);
+  }, [visible.length, ringSize, perimeter]);
 
   const winner = room.participants.find((p) => p.id === winnerId);
 
