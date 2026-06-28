@@ -101,7 +101,7 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#111111' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

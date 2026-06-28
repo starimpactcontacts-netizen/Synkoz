@@ -48,13 +48,13 @@ export default function JoinRoomScreen({ onBack, onJoin }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#111111' },
   header: { paddingHorizontal: 20, paddingTop: 16 },
   back: { color: '#fff', fontSize: 16 },
   body: { flex: 1, paddingHorizontal: 24, justifyContent: 'center', gap: 16 },
   title: { color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 },
   input: {
-    backgroundColor: '#111',
+    backgroundColor: '#1c1c1c',
     color: '#fff',
     fontSize: 18,
     fontWeight: '700',

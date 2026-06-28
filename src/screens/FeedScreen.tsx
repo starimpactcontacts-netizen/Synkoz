@@ -2,6 +2,7 @@ import React from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FEED_ROOMS } from '../data/mockRooms';
 import { FeedRoom } from '../data/types';
+import SynkozLogo from '../components/SynkozLogo';
 
 type Props = {
   onSelectRoom: (room: FeedRoom) => void;
@@ -12,7 +13,7 @@ export default function FeedScreen({ onSelectRoom, onJoinByCode }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.logo}>SYNKOZ</Text>
+        <SynkozLogo size={20} />
         <TouchableOpacity style={styles.joinPill} onPress={onJoinByCode}>
           <Text style={styles.joinPillText}>Join with code</Text>
         </TouchableOpacity>
@@ -43,7 +44,7 @@ function RoomCard({ room, onPress }: { room: FeedRoom; onPress: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#111111' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
   joinPillText: { color: '#000', fontWeight: '700', fontSize: 13 },
   list: { padding: 16, gap: 14 },
   card: {
-    backgroundColor: '#111',
+    backgroundColor: '#1c1c1c',
     borderRadius: 16,
     padding: 18,
     borderWidth: 2,
