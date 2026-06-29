@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
@@ -8,6 +8,10 @@ import { Room } from '../data/types';
 const GRID_GAP = 4;
 const MAX_RINGS = 4; // 3x3 -> 5x5 -> 7x7 -> 9x9 (up to 80 seats)
 const MAX_GRID_WIDTH = 360;
+const SPIN_DURATION = 5000; // ms the roulette runs before landing
+const SPIN_LOOPS = 4; // how many times it sweeps everyone before slowing down
+
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
 // Seats available when a square of `rings` concentric rings is completely full:
 // the full (2n+1)x(2n+1) grid minus the single center spinner cell.
@@ -27,6 +31,14 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const [spinning, setSpinning] = useState(false);
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [posted, setPosted] = useState(false);
+  // Participant index the roulette is currently lit on (red). Persists on the
+  // winner after the spin settles.
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+  }, []);
 
   const { width: screenWidth } = useWindowDimensions();
 
@@ -53,15 +65,41 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
 
   function handleSpinPress() {
     if (spinning) return;
+    const n = visible.length;
+    if (n === 0) return;
+
     setWinnerId(null);
     setPosted(false);
     setSpinning(true);
-  }
 
-  function handleSpinComplete() {
-    setSpinning(false);
-    const pick = room.participants[Math.floor(Math.random() * room.participants.length)];
-    setWinnerId(pick.id);
+    // Predetermine the winner, then animate a decelerating sweep that lands on
+    // it. The sweep advances through `distance` steps (a few full loops plus the
+    // winner's offset); easeOutCubic makes it whip around fast then slow down.
+    const winnerIndex = Math.floor(Math.random() * n);
+    const distance = n * SPIN_LOOPS + winnerIndex;
+    const start =
+      typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+    let lastStep = -1;
+
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const t = Math.min(1, elapsed / SPIN_DURATION);
+      const step = Math.floor(easeOutCubic(t) * distance);
+      if (step !== lastStep) {
+        lastStep = step;
+        setActiveIndex(step % n);
+      }
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        setActiveIndex(winnerIndex);
+        setWinnerId(visible[winnerIndex].id);
+        setSpinning(false);
+        rafRef.current = null;
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
   }
 
   return (
@@ -88,7 +126,6 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
                   spinning={spinning}
                   canSpin={isHost}
                   onPress={handleSpinPress}
-                  onSpinComplete={handleSpinComplete}
                 />
               );
             }
@@ -108,13 +145,20 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
                 key={p.id}
                 participant={p}
                 size={cellSize}
-                highlighted={p.id === winnerId}
+                red={activeIndex === participantIndex}
+                winner={!spinning && p.id === winnerId}
               />
             );
           })}
         </View>
 
-        <Text style={styles.hint}>{isHost ? 'Tap the center block to spin' : 'Waiting for host to spin'}</Text>
+        <Text style={styles.hint}>
+          {spinning
+            ? 'Spinning…'
+            : isHost
+            ? 'Tap the center block to spin'
+            : 'Waiting for host to spin'}
+        </Text>
 
         {overflow > 0 && <Text style={styles.overflow}>+{overflow} more participants</Text>}
 

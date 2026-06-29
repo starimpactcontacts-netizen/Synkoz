@@ -2,14 +2,20 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Participant } from '../data/types';
 
+const RED = '#ff2d55';
+
 type Props = {
   participant: Participant;
   size: number;
-  highlighted?: boolean;
+  /** Currently swept by the roulette (turns the square red). */
+  red?: boolean;
+  /** The settled winner (red + white ring). */
+  winner?: boolean;
   style?: any;
 };
 
-export default function ParticipantSquare({ participant, size, highlighted, style }: Props) {
+export default function ParticipantSquare({ participant, size, red, winner, style }: Props) {
+  const isRed = red || winner;
   return (
     <View
       style={[
@@ -17,14 +23,14 @@ export default function ParticipantSquare({ participant, size, highlighted, styl
         {
           width: size,
           height: size,
-          backgroundColor: participant.avatarColor,
-          borderColor: highlighted ? '#fff' : 'transparent',
-          borderWidth: highlighted ? 3 : 0,
+          backgroundColor: isRed ? RED : participant.avatarColor,
+          borderColor: winner ? '#fff' : 'transparent',
+          borderWidth: winner ? 3 : 0,
         },
         style,
       ]}
     >
-      <Text style={[styles.initial, { fontSize: size * 0.45 }]} numberOfLines={1}>
+      <Text style={[styles.initial, { fontSize: size * 0.45, color: isRed ? '#fff' : '#000' }]} numberOfLines={1}>
         {participant.username.charAt(0).toUpperCase()}
       </Text>
     </View>
@@ -38,7 +44,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   initial: {
-    color: '#000',
     fontWeight: '800',
   },
 });

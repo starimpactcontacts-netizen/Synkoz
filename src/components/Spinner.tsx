@@ -1,48 +1,48 @@
-import React, { useRef } from 'react';
-import { Animated, Easing, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 type Props = {
   size: number;
   spinning: boolean;
-  onSpinComplete: () => void;
   canSpin: boolean;
   onPress: () => void;
 };
 
-export default function Spinner({ size, spinning, onSpinComplete, canSpin, onPress }: Props) {
+export default function Spinner({ size, spinning, canSpin, onPress }: Props) {
   const rotation = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (spinning) {
       rotation.setValue(0);
-      Animated.timing(rotation, {
-        toValue: 1,
-        duration: 2400,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start(() => onSpinComplete());
+      const loop = Animated.loop(
+        Animated.timing(rotation, {
+          toValue: 1,
+          duration: 650,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      );
+      loop.start();
+      return () => loop.stop();
     }
+    rotation.stopAnimation();
   }, [spinning]);
 
-  const spin = rotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', `${360 * 5 + Math.floor(Math.random() * 360)}deg`],
-  });
+  const spin = rotation.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
+  const iconSize = size * 0.5;
 
   return (
-    <TouchableOpacity disabled={!canSpin || spinning} onPress={onPress} activeOpacity={0.7}>
-      <Animated.View
-        style={[
-          styles.block,
-          { width: size, height: size, borderRadius: size * 0.18, transform: [{ rotate: spin }] },
-        ]}
-      >
-        <View style={styles.grid}>
-          {Array.from({ length: 9 }).map((_, i) => (
-            <View key={i} style={styles.cell} />
-          ))}
-        </View>
+    <TouchableOpacity
+      style={[styles.block, { width: size, height: size, borderRadius: size * 0.18 }]}
+      disabled={!canSpin || spinning}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <Animated.View style={{ transform: [{ rotate: spin }] }}>
+        <Ionicons name="sync" size={iconSize} color="#111" />
       </Animated.View>
+      {!spinning && size >= 56 && <Text style={[styles.label, { fontSize: size * 0.16 }]}>SPIN</Text>}
     </TouchableOpacity>
   );
 }
@@ -53,17 +53,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  grid: {
-    width: '54%',
-    height: '54%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  cell: {
-    width: '33.33%',
-    height: '33.33%',
-    backgroundColor: '#000',
-    borderWidth: 2,
-    borderColor: '#fff',
+  label: {
+    color: '#111',
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginTop: 2,
   },
 });
