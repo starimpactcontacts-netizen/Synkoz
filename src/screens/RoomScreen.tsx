@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
 import { Room } from '../data/types';
 
-const MAX_VISIBLE_SQUARES = 8;
-const CELL_SIZE = 76;
 const GRID_GAP = 4;
-const CENTER_INDEX = 4;
+const MAX_RINGS = 4; // 3x3 -> 5x5 -> 7x7 -> 9x9 (up to 80 seats)
+const MAX_GRID_WIDTH = 360;
+
+// Seats available when a square of `rings` concentric rings is completely full:
+// the full (2n+1)x(2n+1) grid minus the single center spinner cell.
+// rings 1..4 -> 8, 24, 48, 80 seats.
+function seatsForRings(rings: number) {
+  const dim = 2 * rings + 1;
+  return dim * dim - 1;
+}
 
 type Props = {
   room: Room;
@@ -20,8 +27,26 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
   const [winnerId, setWinnerId] = useState<string | null>(null);
   const [posted, setPosted] = useState(false);
 
-  const visible = room.participants.slice(0, MAX_VISIBLE_SQUARES);
-  const overflow = room.participants.length - visible.length;
+  const { width: screenWidth } = useWindowDimensions();
+
+  const joined = room.participants.length;
+
+  // Grow the grid in square rings to the smallest square that seats everyone,
+  // capped at MAX_RINGS. Anyone past the cap spills into the "+N more" line.
+  let rings = 1;
+  while (rings < MAX_RINGS && seatsForRings(rings) < joined) rings++;
+  const dim = 2 * rings + 1;
+  const totalCells = dim * dim;
+  const centerIndex = (totalCells - 1) / 2;
+  const seatCount = totalCells - 1;
+
+  const visible = room.participants.slice(0, seatCount);
+  const overflow = joined - visible.length;
+
+  // Shrink the cells so the full square always fits the screen width.
+  const gridTargetWidth = Math.min(screenWidth - 40, MAX_GRID_WIDTH);
+  const cellSize = Math.floor((gridTargetWidth - GRID_GAP * (dim - 1)) / dim);
+  const gridWidth = cellSize * dim + GRID_GAP * (dim - 1);
 
   const winner = room.participants.find((p) => p.id === winnerId);
 
@@ -52,13 +77,13 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
         <Text style={styles.prize}>🎁 {room.prize}</Text>
         <Text style={styles.count}>{room.participants.length} joined</Text>
 
-        <View style={[styles.grid, { width: CELL_SIZE * 3 + GRID_GAP * 2 }]}>
-          {Array.from({ length: 9 }).map((_, cellIndex) => {
-            if (cellIndex === CENTER_INDEX) {
+        <View style={[styles.grid, { width: gridWidth }]}>
+          {Array.from({ length: totalCells }).map((_, cellIndex) => {
+            if (cellIndex === centerIndex) {
               return (
                 <Spinner
                   key="spinner"
-                  size={CELL_SIZE}
+                  size={cellSize}
                   spinning={spinning}
                   canSpin={isHost}
                   onPress={handleSpinPress}
@@ -66,14 +91,22 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
                 />
               );
             }
-            const participantIndex = cellIndex < CENTER_INDEX ? cellIndex : cellIndex - 1;
+            const participantIndex = cellIndex < centerIndex ? cellIndex : cellIndex - 1;
             const p = visible[participantIndex];
-            if (!p) return <View key={`empty-${cellIndex}`} style={{ width: CELL_SIZE, height: CELL_SIZE }} />;
+            if (!p) {
+              // Untaken seat: stays gray and empty.
+              return (
+                <View
+                  key={`empty-${cellIndex}`}
+                  style={[styles.emptySeat, { width: cellSize, height: cellSize }]}
+                />
+              );
+            }
             return (
               <ParticipantSquare
                 key={p.id}
                 participant={p}
-                size={CELL_SIZE}
+                size={cellSize}
                 highlighted={p.id === winnerId}
               />
             );
@@ -119,6 +152,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: GRID_GAP,
+  },
+  emptySeat: {
+    backgroundColor: '#262626',
+    borderRadius: 6,
   },
   hint: { color: '#666', fontSize: 13, marginTop: 18 },
   overflow: { color: '#888', fontSize: 13, marginTop: 6 },
