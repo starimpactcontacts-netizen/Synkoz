@@ -1,5 +1,6 @@
-import React from 'react';
-import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { FEED_ROOMS } from '../data/mockRooms';
 import { FeedRoom } from '../data/types';
 import SynkozLogo from '../components/SynkozLogo';
@@ -9,7 +10,23 @@ type Props = {
   onJoinByCode: () => void;
 };
 
+function formatCount(n: number): string {
+  if (n < 1000) return String(n);
+  const k = n / 1000;
+  return (k >= 10 ? Math.round(k) : Math.round(k * 10) / 10) + 'K';
+}
+
 export default function FeedScreen({ onSelectRoom, onJoinByCode }: Props) {
+  const [query, setQuery] = useState('');
+
+  const rooms = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return FEED_ROOMS;
+    return FEED_ROOMS.filter(
+      (r) => r.code.toLowerCase().includes(q) || r.title.toLowerCase().includes(q),
+    );
+  }, [query]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -19,26 +36,70 @@ export default function FeedScreen({ onSelectRoom, onJoinByCode }: Props) {
         </TouchableOpacity>
       </View>
 
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={18} color="#777" />
+        <TextInput
+          style={styles.searchInput}
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search room code"
+          placeholderTextColor="#666"
+          autoCapitalize="characters"
+          autoCorrect={false}
+          returnKeyType="search"
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Ionicons name="close-circle" size={18} color="#777" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <Text style={styles.sectionLabel}>Open rooms</Text>
+
       <FlatList
-        data={FEED_ROOMS}
+        data={rooms}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item }) => <RoomCard room={item} onPress={() => onSelectRoom(item)} />}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Ionicons name="search" size={28} color="#444" />
+            <Text style={styles.emptyText}>No rooms match “{query}”</Text>
+          </View>
+        }
       />
     </SafeAreaView>
   );
 }
 
 function RoomCard({ room, onPress }: { room: FeedRoom; onPress: () => void }) {
+  const initial = room.hostUsername.replace('@', '').charAt(0).toUpperCase();
   return (
-    <TouchableOpacity style={[styles.card, { borderColor: room.coverColor }]} onPress={onPress}>
-      <Text style={styles.cardTitle}>{room.title}</Text>
-      <Text style={styles.cardPrize}>🎁 {room.prize}</Text>
-      <View style={styles.cardFooter}>
-        <Text style={styles.cardHost}>{room.hostUsername}</Text>
-        <Text style={styles.cardCount}>{room.participantCount} in room</Text>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+      <View style={[styles.avatar, { backgroundColor: room.coverColor }]}>
+        <Text style={styles.avatarInitial}>{initial}</Text>
       </View>
-      <Text style={styles.cardCode}>Code: {room.code}</Text>
+
+      <View style={styles.cardBody}>
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {room.title}
+        </Text>
+        <Text style={styles.cardPrize} numberOfLines={1}>
+          🎁 {room.prize}
+        </Text>
+
+        <View style={styles.cardFooter}>
+          <Text style={styles.cardHost} numberOfLines={1}>
+            {room.hostUsername}
+          </Text>
+          <View style={styles.countChip}>
+            <Ionicons name="people" size={13} color="#cfcfcf" />
+            <Text style={styles.countText}>{formatCount(room.participantCount)}</Text>
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -53,7 +114,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
-  logo: { color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: 1 },
   joinPill: {
     backgroundColor: '#fff',
     paddingHorizontal: 14,
@@ -61,22 +121,73 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   joinPillText: { color: '#000', fontWeight: '700', fontSize: 13 },
-  list: { padding: 16, gap: 14 },
-  card: {
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 6,
+    paddingHorizontal: 14,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: '#1c1c1c',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 2,
-    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#2a2a2a',
   },
-  cardTitle: { color: '#fff', fontSize: 18, fontWeight: '800' },
-  cardPrize: { color: '#fff', fontSize: 14, marginTop: 6 },
+  searchInput: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    paddingVertical: 0,
+  },
+  sectionLabel: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 18,
+    marginBottom: 4,
+    paddingHorizontal: 20,
+  },
+  list: { padding: 16, paddingTop: 8 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: { color: '#111', fontSize: 24, fontWeight: '900' },
+  cardBody: { flex: 1, justifyContent: 'center' },
+  cardTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  cardPrize: { color: '#9a9a9a', fontSize: 13, marginTop: 3 },
   cardFooter: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 14,
+    marginTop: 10,
   },
-  cardHost: { color: '#888', fontSize: 13 },
-  cardCount: { color: '#888', fontSize: 13 },
-  cardCode: { color: '#555', fontSize: 12, marginTop: 8 },
+  cardHost: { color: '#777', fontSize: 13, flex: 1 },
+  countChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#262626',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  countText: { color: '#e6e6e6', fontSize: 13, fontWeight: '700' },
+  empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
+  emptyText: { color: '#666', fontSize: 14 },
 });
