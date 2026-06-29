@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export type Tab = 'play' | 'create' | 'profile';
+export type Tab = 'home' | 'create' | 'profile';
 
 type Props = {
   active: Tab;
@@ -12,26 +12,16 @@ type Props = {
 export default function BottomNav({ active, onChange }: Props) {
   return (
     <View style={styles.bar}>
-      <SideTab
-        icon="game-controller"
-        label="Play"
-        active={active === 'play'}
-        onPress={() => onChange('play')}
-      />
+      <SideTab icon="home" label="Home" active={active === 'home'} onPress={() => onChange('home')} />
 
-      <TouchableOpacity style={styles.createWrap} onPress={() => onChange('create')} activeOpacity={0.85}>
+      <TouchableOpacity style={styles.tab} onPress={() => onChange('create')} activeOpacity={0.7}>
         <View style={[styles.createBtn, active === 'create' && styles.createBtnActive]}>
-          <Ionicons name="add" size={30} color="#111" />
+          <Ionicons name="add" size={22} color="#111" />
         </View>
-        <Text style={[styles.createLabel, active === 'create' && styles.labelActive]}>Create</Text>
+        <Text style={[styles.label, active === 'create' && styles.labelActive]}>Create</Text>
       </TouchableOpacity>
 
-      <SideTab
-        icon="person"
-        label="Profile"
-        active={active === 'profile'}
-        onPress={() => onChange('profile')}
-      />
+      <SideTab icon="person" label="Profile" active={active === 'profile'} onPress={() => onChange('profile')} />
     </View>
   );
 }
@@ -47,11 +37,10 @@ function SideTab({
   active: boolean;
   onPress: () => void;
 }) {
-  const color = active ? '#fff' : '#777';
   return (
-    <TouchableOpacity style={styles.sideTab} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={icon} size={24} color={color} />
-      <Text style={[styles.sideLabel, active && styles.labelActive]}>{label}</Text>
+    <TouchableOpacity style={styles.tab} onPress={onPress} activeOpacity={0.7}>
+      <Ionicons name={icon} size={22} color={active ? '#fff' : '#888'} />
+      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -59,33 +48,24 @@ function SideTab({
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     justifyContent: 'space-around',
     backgroundColor: '#161616',
     borderTopWidth: 1,
-    borderTopColor: '#242424',
-    paddingTop: 10,
-    paddingBottom: 24,
-    paddingHorizontal: 12,
+    borderTopColor: '#222',
+    paddingTop: 8,
+    paddingBottom: 16,
   },
-  sideTab: { alignItems: 'center', gap: 4, flex: 1, paddingBottom: 6 },
-  sideLabel: { color: '#777', fontSize: 11, fontWeight: '700' },
+  tab: { alignItems: 'center', justifyContent: 'center', gap: 4, flex: 1, height: 46 },
+  label: { color: '#888', fontSize: 10.5, fontWeight: '700' },
   labelActive: { color: '#fff' },
-  createWrap: { alignItems: 'center', flex: 1 },
   createBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 11,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -22,
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
   },
   createBtnActive: { backgroundColor: '#ff2d55' },
-  createLabel: { color: '#777', fontSize: 11, fontWeight: '700', marginTop: 4 },
 });

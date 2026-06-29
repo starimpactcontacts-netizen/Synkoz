@@ -17,7 +17,7 @@ type Overlay =
   | null;
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('play');
+  const [tab, setTab] = useState<Tab>('home');
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   function openRoomFromFeed(feedRoom: FeedRoom) {
@@ -57,7 +57,7 @@ export default function App() {
   return (
     <View style={styles.app}>
       <View style={styles.screen}>
-        {tab === 'play' && (
+        {tab === 'home' && (
           <FeedScreen onSelectRoom={openRoomFromFeed} onJoinByCode={() => setOverlay({ kind: 'join' })} />
         )}
         {tab === 'create' && <CreateRoomScreen onCreate={openCreatedRoom} />}
