@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import ParticipantSquare from '../components/ParticipantSquare';
 import Spinner from '../components/Spinner';
+import LiveChat from '../components/LiveChat';
 import { Room } from '../data/types';
 
 const GRID_GAP = 4;
@@ -128,6 +129,8 @@ export default function RoomScreen({ room, isHost, onBack }: Props) {
             {posted && <Text style={styles.postedText}>Posted to feed ✓</Text>}
           </View>
         )}
+
+        <LiveChat />
       </ScrollView>
     </SafeAreaView>
   );
