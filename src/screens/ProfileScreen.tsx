@@ -107,7 +107,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#111111' },
   scroll: { padding: 24, paddingBottom: 40 },
-  heading: { color: '#fff', fontSize: 26, fontWeight: '900', marginTop: 8 },
+  heading: { color: '#fff', fontSize: 24, fontFamily: 'RussoOne_400Regular', marginTop: 8 },
   avatarWrap: { alignItems: 'center', marginTop: 20, marginBottom: 8 },
   avatar: {
     width: 96,

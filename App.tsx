@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useFonts, RussoOne_400Regular } from '@expo-google-fonts/russo-one';
 import FeedScreen from './src/screens/FeedScreen';
 import JoinRoomScreen from './src/screens/JoinRoomScreen';
 import RoomScreen from './src/screens/RoomScreen';
@@ -38,6 +39,9 @@ function localCode(): string {
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [overlay, setOverlay] = useState<Overlay>(null);
+  const [fontsLoaded] = useFonts({ RussoOne_400Regular });
+
+  if (!fontsLoaded) return <View style={styles.app} />;
 
   async function openRoomFromFeed(feedRoom: FeedRoom, live: boolean) {
     if (live) {

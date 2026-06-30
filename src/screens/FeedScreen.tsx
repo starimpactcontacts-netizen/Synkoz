@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
   searchInput: { flex: 1, color: '#fff', fontSize: 15, fontWeight: '600', letterSpacing: 0.5, paddingVertical: 0 },
-  sectionLabel: { color: '#fff', fontSize: 18, fontWeight: '800', marginTop: 18, marginBottom: 4, paddingHorizontal: 20, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionLabel: { color: '#fff', fontSize: 18, fontFamily: 'RussoOne_400Regular', marginTop: 18, marginBottom: 4, paddingHorizontal: 20, textTransform: 'uppercase', letterSpacing: 0.5 },
   list: { padding: 16, paddingTop: 8 },
   card: {
     flexDirection: 'row',
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   avatar: { width: 56, height: 56, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#111', fontSize: 24, fontWeight: '900' },
   cardBody: { flex: 1, justifyContent: 'center' },
-  cardTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  cardTitle: { color: '#fff', fontSize: 16, fontFamily: 'RussoOne_400Regular' },
   cardPrize: { color: '#9a9a9a', fontSize: 13, marginTop: 3 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
   cardHost: { color: '#777', fontSize: 13, flex: 1 },

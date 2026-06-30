@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   tab: { alignItems: 'center', justifyContent: 'center', gap: 4, flex: 1, height: 46 },
-  label: { color: '#888', fontSize: 10.5, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.4 },
+  label: { color: '#888', fontSize: 10.5, fontFamily: 'RussoOne_400Regular', textTransform: 'uppercase', letterSpacing: 0.4 },
   labelActive: { color: '#fff' },
   createBtn: {
     width: 34,

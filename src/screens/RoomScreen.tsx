@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import CrowdStage from '../components/CrowdStage';
 import LiveChat, { ChatMessage } from '../components/LiveChat';
 import { Participant, Room } from '../data/types';
@@ -134,7 +135,10 @@ export default function RoomScreen({ room, isHost, onBack, roomId, identity }: P
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>{room.title}</Text>
-        <Text style={styles.prize}>🎁 {room.prize}</Text>
+        <View style={styles.prizeRow}>
+          <Ionicons name="gift" size={16} color="#ffd95c" />
+          <Text style={styles.prize}>{room.prize}</Text>
+        </View>
 
         <CrowdStage
           participants={participants}
@@ -184,10 +188,19 @@ const styles = StyleSheet.create({
   },
   back: { color: '#fff', fontSize: 16 },
   backDisabled: { color: '#555' },
-  code: { color: '#888', fontSize: 14, fontWeight: '700' },
+  code: { color: '#888', fontSize: 14, fontWeight: '700', fontFamily: 'RussoOne_400Regular', letterSpacing: 0.5 },
   scroll: { alignItems: 'center', paddingBottom: 40 },
-  title: { color: '#fff', fontSize: 24, fontWeight: '800', marginTop: 16, textAlign: 'center' },
-  prize: { color: '#fff', fontSize: 16, marginTop: 6, marginBottom: 18 },
+  title: {
+    color: '#fff',
+    fontSize: 26,
+    marginTop: 16,
+    textAlign: 'center',
+    fontFamily: 'RussoOne_400Regular',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  prizeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, marginBottom: 18 },
+  prize: { color: '#fff', fontSize: 15, fontWeight: '700' },
   resultBanner: { marginTop: 22, alignItems: 'center', gap: 12 },
   postButton: {
     backgroundColor: '#fff',

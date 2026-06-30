@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingTop: 16 },
   back: { color: '#fff', fontSize: 16 },
   body: { flex: 1, paddingHorizontal: 24, justifyContent: 'center', gap: 16 },
-  title: { color: '#fff', fontSize: 24, fontWeight: '800', marginBottom: 8 },
+  title: { color: '#fff', fontSize: 22, fontFamily: 'RussoOne_400Regular', marginBottom: 8 },
   input: {
     backgroundColor: '#1c1c1c',
     color: '#fff',
@@ -74,5 +74,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: '#000', fontWeight: '800', fontSize: 16 },
+  buttonText: { color: '#000', fontFamily: 'RussoOne_400Regular', fontSize: 16 },
 });

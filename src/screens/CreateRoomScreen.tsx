@@ -73,7 +73,7 @@ export default function CreateRoomScreen({ onSubmit }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#111111' },
   scroll: { padding: 24, gap: 8 },
-  heading: { color: '#fff', fontSize: 26, fontWeight: '900', marginTop: 8 },
+  heading: { color: '#fff', fontSize: 24, fontFamily: 'RussoOne_400Regular', marginTop: 8 },
   sub: { color: '#888', fontSize: 14, marginBottom: 18 },
   label: { color: '#cfcfcf', fontSize: 13, fontWeight: '700', marginTop: 14, marginBottom: 6 },
   input: {
@@ -101,5 +101,5 @@ const styles = StyleSheet.create({
     minHeight: 54,
   },
   buttonDisabled: { opacity: 0.4 },
-  buttonText: { color: '#111', fontWeight: '900', fontSize: 16 },
+  buttonText: { color: '#111', fontFamily: 'RussoOne_400Regular', fontSize: 16 },
 });

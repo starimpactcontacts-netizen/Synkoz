@@ -388,8 +388,8 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
   statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#555' },
   statusDotActive: { backgroundColor: '#ff3b5c' },
-  statusLabel: { color: '#999', fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
-  counter: { color: '#fff', fontSize: 56, fontWeight: '900', letterSpacing: -1 },
+  statusLabel: { color: '#999', fontSize: 12, fontFamily: 'RussoOne_400Regular', letterSpacing: 1.5 },
+  counter: { color: '#fff', fontSize: 56, fontFamily: 'RussoOne_400Regular', letterSpacing: -1 },
   overflow: { color: '#777', fontSize: 12, marginTop: 2, marginBottom: 8 },
   stage: {
     marginTop: 14,
@@ -405,6 +405,6 @@ const styles = StyleSheet.create({
   flashOverlay: { backgroundColor: '#fff' },
   spinBtnWrap: { marginTop: 22, borderRadius: 8, shadowColor: '#c45cff', shadowOpacity: 0.5, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
   spinBtn: { paddingHorizontal: 36, paddingVertical: 16, borderRadius: 8, borderWidth: 2, borderColor: '#fff' },
-  spinBtnText: { color: '#fff', fontWeight: '900', fontSize: 15, letterSpacing: 1 },
+  spinBtnText: { color: '#fff', fontFamily: 'RussoOne_400Regular', fontSize: 15, letterSpacing: 1 },
   waitingText: { color: '#666', fontSize: 13, marginTop: 18 },
 });

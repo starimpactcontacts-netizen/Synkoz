@@ -83,5 +83,5 @@ const styles = StyleSheet.create({
   avatar: { alignItems: 'center', justifyContent: 'center' },
   initial: { color: '#000', fontWeight: '900' },
   name: { color: '#fff', fontWeight: '800' },
-  crown: { color: '#ffd95c', fontWeight: '900', fontSize: 13, marginTop: 2, letterSpacing: 0.5 },
+  crown: { color: '#ffd95c', fontFamily: 'RussoOne_400Regular', fontSize: 13, marginTop: 2, letterSpacing: 0.5 },
 });
