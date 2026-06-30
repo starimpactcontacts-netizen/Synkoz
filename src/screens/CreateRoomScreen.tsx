@@ -1,48 +1,27 @@
-import React, { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Participant, Room } from '../data/types';
 
 type Props = {
-  onCreate: (room: Room) => void;
+  /** Creates the room (backend if available, else a local room) and opens it. */
+  onSubmit: (title: string, prize: string) => Promise<void>;
 };
 
-const COLORS = ['#ff5c8a', '#5c8aff', '#5cffb0', '#ffd95c', '#c45cff', '#ff8a5c'];
-const SEED_NAMES = ['leo', 'mia', 'zane', 'kira', 'theo', 'nova'];
-
-function randomCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let s = 'SYNK';
-  for (let i = 0; i < 2; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return s;
-}
-
-function seedParticipants(): Participant[] {
-  return SEED_NAMES.map((name, i) => ({
-    id: `p${i}`,
-    username: name,
-    avatarColor: COLORS[i % COLORS.length],
-  }));
-}
-
-export default function CreateRoomScreen({ onCreate }: Props) {
+export default function CreateRoomScreen({ onSubmit }: Props) {
   const [title, setTitle] = useState('');
   const [prize, setPrize] = useState('');
-  const code = useMemo(randomCode, []);
+  const [busy, setBusy] = useState(false);
 
-  const canCreate = title.trim().length > 0 && prize.trim().length > 0;
+  const canCreate = title.trim().length > 0 && prize.trim().length > 0 && !busy;
 
-  function create() {
+  async function create() {
     if (!canCreate) return;
-    onCreate({
-      id: `room-${Date.now()}`,
-      code,
-      title: title.trim(),
-      prize: prize.trim(),
-      hostId: 'you',
-      participants: seedParticipants(),
-      status: 'waiting',
-    });
+    setBusy(true);
+    try {
+      await onSubmit(title.trim(), prize.trim());
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -71,19 +50,20 @@ export default function CreateRoomScreen({ onCreate }: Props) {
           maxLength={48}
         />
 
-        <View style={styles.codeChip}>
-          <Ionicons name="key" size={15} color="#9a9a9a" />
-          <Text style={styles.codeText}>Room code: {code}</Text>
-        </View>
-
         <TouchableOpacity
           style={[styles.button, !canCreate && styles.buttonDisabled]}
           disabled={!canCreate}
           onPress={create}
           activeOpacity={0.85}
         >
-          <Ionicons name="rocket" size={18} color="#111" />
-          <Text style={styles.buttonText}>Create room</Text>
+          {busy ? (
+            <ActivityIndicator color="#111" />
+          ) : (
+            <>
+              <Ionicons name="rocket" size={18} color="#111" />
+              <Text style={styles.buttonText}>Create room</Text>
+            </>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -107,18 +87,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2a2a2a',
   },
-  codeChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    backgroundColor: '#1c1c1c',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginTop: 22,
-  },
-  codeText: { color: '#cfcfcf', fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -128,6 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     paddingVertical: 16,
     marginTop: 28,
+    minHeight: 54,
   },
   buttonDisabled: { opacity: 0.4 },
   buttonText: { color: '#111', fontWeight: '900', fontSize: 16 },

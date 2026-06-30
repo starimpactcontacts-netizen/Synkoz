@@ -10,11 +10,18 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { censor } from '../lib/profanity';
 
-type ChatMessage = {
+export type ChatMessage = {
   id: string;
   user: string;
   text: string;
   mine?: boolean;
+};
+
+type Props = {
+  /** Controlled (backend) mode: messages come from the room subscription. */
+  messages?: ChatMessage[];
+  /** Backend send handler. Receives the already-moderated text. */
+  onSend?: (text: string) => void;
 };
 
 const NAME_COLORS = ['#ff5c8a', '#5c8aff', '#5cffb0', '#ffd95c', '#c45cff', '#ff8a5c'];
@@ -31,19 +38,23 @@ const SEED: ChatMessage[] = [
   { id: 'm3', user: 'ari', text: 'hope i win the airpods fr' },
 ];
 
-export default function LiveChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>(SEED);
+export default function LiveChat({ messages, onSend }: Props) {
+  const controlled = messages !== undefined;
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>(SEED);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+
+  const shown = controlled ? (messages as ChatMessage[]) : localMessages;
 
   function send() {
     const trimmed = draft.trim();
     if (!trimmed) return;
     const clean = censor(trimmed); // moderation: mask profanity before posting
-    setMessages((prev) => [
-      ...prev,
-      { id: `me-${Date.now()}`, user: 'you', text: clean, mine: true },
-    ]);
+    if (controlled) {
+      onSend?.(clean);
+    } else {
+      setLocalMessages((prev) => [...prev, { id: `me-${Date.now()}`, user: 'you', text: clean, mine: true }]);
+    }
     setDraft('');
   }
 
@@ -64,14 +75,16 @@ export default function LiveChat() {
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
-        {messages.map((m) => (
-          <Text key={m.id} style={styles.message}>
-            <Text style={[styles.user, { color: m.mine ? '#fff' : colorFor(m.user) }]}>
-              {m.user}
+        {shown.length === 0 ? (
+          <Text style={styles.emptyChat}>Be the first to say something 👋</Text>
+        ) : (
+          shown.map((m) => (
+            <Text key={m.id} style={styles.message}>
+              <Text style={[styles.user, { color: m.mine ? '#fff' : colorFor(m.user) }]}>{m.user}</Text>
+              <Text style={styles.messageText}>  {m.text}</Text>
             </Text>
-            <Text style={styles.messageText}>  {m.text}</Text>
-          </Text>
-        ))}
+          ))
+        )}
       </ScrollView>
 
       <View style={styles.inputRow}>
@@ -117,6 +130,7 @@ const styles = StyleSheet.create({
     borderColor: '#242424',
   },
   messagesContent: { padding: 12, gap: 8 },
+  emptyChat: { color: '#666', fontSize: 13, textAlign: 'center', paddingVertical: 14 },
   message: { fontSize: 14, lineHeight: 19 },
   user: { fontWeight: '800' },
   messageText: { color: '#e9e9e9' },

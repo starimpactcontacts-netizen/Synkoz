@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { loadIdentity, updateIdentity } from '../lib/identity';
 
 const SETTINGS: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
   { icon: 'notifications-outline', label: 'Notifications' },
@@ -14,6 +15,19 @@ export default function ProfileScreen() {
   const [username, setUsername] = useState('your_name');
   const [editing, setEditing] = useState(false);
   const [tiktokConnected, setTiktokConnected] = useState(false);
+
+  useEffect(() => {
+    loadIdentity().then((id) => setUsername(id.username));
+  }, []);
+
+  function toggleEdit() {
+    if (editing) {
+      const clean = username.trim() || 'guest';
+      setUsername(clean);
+      updateIdentity({ username: clean });
+    }
+    setEditing((e) => !e);
+  }
 
   const initial = username.trim().charAt(0).toUpperCase() || '?';
 
@@ -47,7 +61,7 @@ export default function ProfileScreen() {
             autoCapitalize="none"
             maxLength={20}
           />
-          <TouchableOpacity onPress={() => setEditing((e) => !e)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <TouchableOpacity onPress={toggleEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Ionicons name={editing ? 'checkmark' : 'pencil'} size={18} color="#fff" />
           </TouchableOpacity>
         </View>

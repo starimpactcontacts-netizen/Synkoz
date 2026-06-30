@@ -8,19 +8,57 @@ import CreateRoomScreen from './src/screens/CreateRoomScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BottomNav, { Tab } from './src/components/BottomNav';
 import { MOCK_ROOM } from './src/data/mockRooms';
-import { FeedRoom, Room } from './src/data/types';
+import { FeedRoom, Participant, Room } from './src/data/types';
+import { Identity, loadIdentity } from './src/lib/identity';
+import { createRoom, fetchParticipants, getRoom, getRoomByCode, joinRoom, roomRowToRoom } from './src/lib/db';
 
-// Full-screen flows that take over from the tabbed shell (no navbar).
 type Overlay =
-  | { kind: 'room'; room: Room; isHost: boolean }
+  | { kind: 'room'; room: Room; isHost: boolean; roomId?: string; identity?: Identity }
   | { kind: 'join' }
   | null;
+
+const MOCK_COLORS = ['#ff5c8a', '#5c8aff', '#5cffb0', '#ffd95c', '#c45cff', '#ff8a5c'];
+
+// Used only when the backend is unreachable, so a created/joined room still works.
+function seedMockParticipants(): Participant[] {
+  return ['leo', 'mia', 'zane', 'kira', 'theo', 'nova'].map((n, i) => ({
+    id: `p${i}`,
+    username: n,
+    avatarColor: MOCK_COLORS[i % MOCK_COLORS.length],
+  }));
+}
+
+function localCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = 'SYNK';
+  for (let i = 0; i < 2; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [overlay, setOverlay] = useState<Overlay>(null);
 
-  function openRoomFromFeed(feedRoom: FeedRoom) {
+  async function openRoomFromFeed(feedRoom: FeedRoom, live: boolean) {
+    if (live) {
+      try {
+        const id = await loadIdentity();
+        await joinRoom(id, feedRoom.id);
+        const [row, parts] = await Promise.all([getRoom(feedRoom.id), fetchParticipants(feedRoom.id)]);
+        if (row) {
+          setOverlay({
+            kind: 'room',
+            isHost: row.host_id === id.userId,
+            roomId: feedRoom.id,
+            identity: id,
+            room: roomRowToRoom(row, parts),
+          });
+          return;
+        }
+      } catch {
+        // fall through to mock
+      }
+    }
     setOverlay({
       kind: 'room',
       isHost: false,
@@ -28,18 +66,66 @@ export default function App() {
     });
   }
 
-  function openRoomFromCode(code: string) {
-    setOverlay({ kind: 'room', isHost: false, room: { ...MOCK_ROOM, code } });
+  async function createAndOpenRoom(title: string, prize: string) {
+    try {
+      const id = await loadIdentity();
+      const row = await createRoom(id, title, prize);
+      const parts = await fetchParticipants(row.id);
+      const participants = parts.length
+        ? parts
+        : [{ id: id.userId, username: id.username, avatarColor: id.avatarColor }];
+      setOverlay({ kind: 'room', isHost: true, roomId: row.id, identity: id, room: roomRowToRoom(row, participants) });
+      return;
+    } catch {
+      // backend unreachable -> local room
+    }
+    setOverlay({
+      kind: 'room',
+      isHost: true,
+      room: {
+        id: `room-${Date.now()}`,
+        code: localCode(),
+        title,
+        prize,
+        hostId: 'you',
+        participants: seedMockParticipants(),
+        status: 'waiting',
+      },
+    });
   }
 
-  function openCreatedRoom(room: Room) {
-    setOverlay({ kind: 'room', isHost: true, room });
+  async function openRoomByCode(code: string) {
+    try {
+      const id = await loadIdentity();
+      const row = await getRoomByCode(code);
+      if (row) {
+        await joinRoom(id, row.id);
+        const parts = await fetchParticipants(row.id);
+        setOverlay({
+          kind: 'room',
+          isHost: row.host_id === id.userId,
+          roomId: row.id,
+          identity: id,
+          room: roomRowToRoom(row, parts),
+        });
+        return;
+      }
+    } catch {
+      // fall through to mock
+    }
+    setOverlay({ kind: 'room', isHost: false, room: { ...MOCK_ROOM, code } });
   }
 
   if (overlay?.kind === 'room') {
     return (
       <>
-        <RoomScreen room={overlay.room} isHost={overlay.isHost} onBack={() => setOverlay(null)} />
+        <RoomScreen
+          room={overlay.room}
+          isHost={overlay.isHost}
+          roomId={overlay.roomId}
+          identity={overlay.identity}
+          onBack={() => setOverlay(null)}
+        />
         <StatusBar style="light" />
       </>
     );
@@ -48,7 +134,7 @@ export default function App() {
   if (overlay?.kind === 'join') {
     return (
       <>
-        <JoinRoomScreen onBack={() => setOverlay(null)} onJoin={openRoomFromCode} />
+        <JoinRoomScreen onBack={() => setOverlay(null)} onJoin={openRoomByCode} />
         <StatusBar style="light" />
       </>
     );
@@ -60,7 +146,7 @@ export default function App() {
         {tab === 'home' && (
           <FeedScreen onSelectRoom={openRoomFromFeed} onJoinByCode={() => setOverlay({ kind: 'join' })} />
         )}
-        {tab === 'create' && <CreateRoomScreen onCreate={openCreatedRoom} />}
+        {tab === 'create' && <CreateRoomScreen onSubmit={createAndOpenRoom} />}
         {tab === 'profile' && <ProfileScreen />}
       </View>
 
