@@ -7,7 +7,7 @@ import RoomScreen from './src/screens/RoomScreen';
 import CreateRoomScreen from './src/screens/CreateRoomScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import BottomNav, { Tab } from './src/components/BottomNav';
-import { MOCK_ROOM } from './src/data/mockRooms';
+import { makeParticipants, MOCK_ROOM } from './src/data/mockRooms';
 import { FeedRoom, Participant, Room } from './src/data/types';
 import { Identity, loadIdentity } from './src/lib/identity';
 import { createRoom, fetchParticipants, getRoom, getRoomByCode, joinRoom, roomRowToRoom } from './src/lib/db';
@@ -62,7 +62,14 @@ export default function App() {
     setOverlay({
       kind: 'room',
       isHost: false,
-      room: { ...MOCK_ROOM, id: feedRoom.id, code: feedRoom.code, title: feedRoom.title, prize: feedRoom.prize },
+      room: {
+        ...MOCK_ROOM,
+        id: feedRoom.id,
+        code: feedRoom.code,
+        title: feedRoom.title,
+        prize: feedRoom.prize,
+        participants: makeParticipants(feedRoom.participantCount),
+      },
     });
   }
 

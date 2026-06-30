@@ -2,12 +2,23 @@ import { FeedRoom, Participant, Room } from './types';
 
 const COLORS = ['#ff5c8a', '#5c8aff', '#5cffb0', '#ffd95c', '#c45cff', '#ff8a5c'];
 
-function makeParticipants(count: number): Participant[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `p${i}`,
-    username: `user${i + 1}`,
-    avatarColor: COLORS[i % COLORS.length],
-  }));
+const NAME_POOL = [
+  'leo', 'mia', 'zane', 'kira', 'theo', 'nova', 'maya', 'deon', 'ari', 'jude',
+  'wren', 'cleo', 'finn', 'iris', 'remy', 'sage', 'kai', 'luna', 'milo', 'tess',
+  'ezra', 'nyla', 'omar', 'pia', 'quinn', 'rex', 'sol', 'tara', 'uma', 'vera',
+  'wade', 'xan', 'yuki', 'zara', 'bo', 'cass', 'dax', 'eli', 'fox', 'gia',
+];
+
+export function makeParticipants(count: number): Participant[] {
+  return Array.from({ length: count }, (_, i) => {
+    const base = NAME_POOL[i % NAME_POOL.length];
+    const cycle = Math.floor(i / NAME_POOL.length);
+    return {
+      id: `p${i}`,
+      username: cycle > 0 ? `${base}${cycle}` : base,
+      avatarColor: COLORS[i % COLORS.length],
+    };
+  });
 }
 
 export const FEED_ROOMS: FeedRoom[] = [
