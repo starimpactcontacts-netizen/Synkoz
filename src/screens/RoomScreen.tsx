@@ -189,7 +189,14 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: 24, fontWeight: '800', marginTop: 16, textAlign: 'center' },
   prize: { color: '#fff', fontSize: 16, marginTop: 6, marginBottom: 18 },
   resultBanner: { marginTop: 22, alignItems: 'center', gap: 12 },
-  postButton: { backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 24 },
+  postButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
   postButtonText: { color: '#000', fontWeight: '800' },
   postedText: { color: '#5cffb0', fontWeight: '700' },
 });

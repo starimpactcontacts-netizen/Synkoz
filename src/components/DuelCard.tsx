@@ -40,7 +40,7 @@ export default function DuelCard({ participant, highlighted, won, size }: Props)
           {
             width: size * 1.3,
             height: size * 1.5,
-            borderRadius: 30,
+            borderRadius: 10,
             backgroundColor: glowColor,
             opacity: glowOpacity.interpolate({ inputRange: [0, 1], outputRange: [0, 0.45] }),
           },
@@ -49,7 +49,7 @@ export default function DuelCard({ participant, highlighted, won, size }: Props)
       <View
         style={[
           styles.card,
-          { width: size, height: size * 1.2, borderRadius: 24, borderColor: highlighted || won ? glowColor : '#262626' },
+          { width: size, height: size * 1.2, borderRadius: 8, borderColor: highlighted || won ? glowColor : '#333' },
         ]}
       >
         <View
