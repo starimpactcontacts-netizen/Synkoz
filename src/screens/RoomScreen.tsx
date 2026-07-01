@@ -149,6 +149,7 @@ export default function RoomScreen({ room, isHost, onBack, roomId, identity }: P
           spinToken={spinToken}
           triggerWinnerId={pendingWinnerId}
           spinSeed={roomId ?? room.code}
+          meId={identity?.userId}
           onPressSpin={handleSpinPress}
           onResolved={handleSpinResolved}
         />

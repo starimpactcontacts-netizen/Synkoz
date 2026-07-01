@@ -6,49 +6,53 @@ import ParticipantDot from './ParticipantDot';
 import DuelCard from './DuelCard';
 import Confetti from './Confetti';
 import { buildSpinPlan, SpinPlan } from '../utils/eliminationSchedule';
-import { hashSeed, mulberry32 } from '../utils/rng';
+import { hashSeed } from '../utils/rng';
 
 const RENDER_CAP = 360;
-const FLOAT_PHASE_COUNT = 5;
 const DUEL_DURATION = 1500;
 const DUEL_LOOPS = 7;
+const GRID_GAP = 4;
+const GRID_PAD = 8;
+const MAX_TILE = 58;
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const now = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
 
 type Phase = 'idle' | 'eliminating' | 'duel' | 'revealed';
 
-type DotMeta = { x: number; y: number; ampX: number; ampY: number; floatIndex: number };
+type DotMeta = { x: number; y: number };
 type StageLayout = { ids: string[]; positions: Map<string, DotMeta>; dotSize: number };
 
+// Lay participants out as a dense, locked lobby grid: filled row-major in
+// roster order (top-left first) so the crowd reads as "N humans here", and
+// centered as a block so small rooms don't stretch across the whole stage.
 function computeLayout(ids: string[], stageW: number, stageH: number): StageLayout {
   const count = Math.max(ids.length, 1);
-  let cols = Math.max(1, Math.round(Math.sqrt((count * stageW) / stageH)));
+  const innerW = stageW - GRID_PAD * 2;
+  const innerH = stageH - GRID_PAD * 2;
+
+  let cols = Math.max(1, Math.round(Math.sqrt((count * innerW) / innerH)));
   let rows = Math.max(1, Math.ceil(count / cols));
   while (cols * rows < count) cols++;
-  const cellW = stageW / cols;
-  const cellH = stageH / rows;
-  const dotSize = Math.max(7, Math.min(28, Math.min(cellW, cellH) * 0.62));
-  const capacity = cols * rows;
-  const taken = new Set<number>();
-  const positions = new Map<string, DotMeta>();
 
-  ids.forEach((id) => {
-    const h = hashSeed(id);
-    let idx = h % capacity;
-    while (taken.has(idx)) idx = (idx + 1) % capacity;
-    taken.add(idx);
-    const cx = idx % cols;
-    const cy = Math.floor(idx / cols);
-    const rand = mulberry32(h ^ 0x9e3779b9);
-    const jitterX = (rand() - 0.5) * cellW * 0.5;
-    const jitterY = (rand() - 0.5) * cellH * 0.5;
+  const cell = Math.min((innerW + GRID_GAP) / cols, (innerH + GRID_GAP) / rows);
+  const dotSize = Math.max(6, Math.min(MAX_TILE, cell - GRID_GAP));
+
+  // Center the whole grid block inside the stage.
+  const usedCols = Math.min(cols, count);
+  const gridW = usedCols * dotSize + (usedCols - 1) * GRID_GAP;
+  const gridRows = Math.ceil(count / cols);
+  const gridH = gridRows * dotSize + (gridRows - 1) * GRID_GAP;
+  const originX = (stageW - gridW) / 2;
+  const originY = (stageH - gridH) / 2;
+
+  const positions = new Map<string, DotMeta>();
+  ids.forEach((id, i) => {
+    const cx = i % cols;
+    const cy = Math.floor(i / cols);
     positions.set(id, {
-      x: cx * cellW + cellW / 2 + jitterX - dotSize / 2,
-      y: cy * cellH + cellH / 2 + jitterY - dotSize / 2,
-      ampX: 2 + rand() * 3,
-      ampY: 2 + rand() * 3,
-      floatIndex: Math.floor(rand() * FLOAT_PHASE_COUNT),
+      x: originX + cx * (dotSize + GRID_GAP),
+      y: originY + cy * (dotSize + GRID_GAP),
     });
   });
 
@@ -64,6 +68,8 @@ type Props = {
   triggerWinnerId: string | null;
   /** Stable per-room id used to keep the elimination order identical across viewers. */
   spinSeed: string;
+  /** The viewer's own participant id, so their tile can be highlighted. */
+  meId?: string;
   onPressSpin: () => void;
   onResolved: (winnerId: string) => void;
 };
@@ -75,6 +81,7 @@ export default function CrowdStage({
   spinToken,
   triggerWinnerId,
   spinSeed,
+  meId,
   onPressSpin,
   onResolved,
 }: Props) {
@@ -101,31 +108,6 @@ export default function CrowdStage({
   const duelOpacity = useRef(new Animated.Value(0)).current;
   const flash = useRef(new Animated.Value(0)).current;
   const counterPunch = useRef(new Animated.Value(1)).current;
-  const floatPhases = useRef(Array.from({ length: FLOAT_PHASE_COUNT }, () => new Animated.Value(0))).current;
-
-  // Ambient idle "alive" motion: a handful of staggered, looping clocks shared by every dot.
-  useEffect(() => {
-    const loops = floatPhases.map((phase, i) =>
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(phase, {
-            toValue: 1,
-            duration: 2500 + i * 240,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(phase, {
-            toValue: 0,
-            duration: 2500 + i * 240,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-      ),
-    );
-    loops.forEach((l) => l.start());
-    return () => loops.forEach((l) => l.stop());
-  }, [floatPhases]);
 
   // Track the live roster while idle so newcomers appear in the crowd.
   useEffect(() => {
@@ -337,11 +319,8 @@ export default function CrowdStage({
                   x={meta.x}
                   y={meta.y}
                   size={dotsLayout.dotSize}
-                  floatPhases={floatPhases}
-                  floatIndex={meta.floatIndex}
-                  ampX={meta.ampX}
-                  ampY={meta.ampY}
                   eliminated={eliminated}
+                  isMe={id === meId}
                 />
               );
             })}
@@ -399,8 +378,8 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 1 },
   statusDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#555' },
   statusDotActive: { backgroundColor: '#ff3b5c' },
-  statusLabel: { color: '#999', fontSize: 9, fontFamily: 'RussoOne_400Regular', letterSpacing: 0.8 },
-  counter: { color: '#fff', fontSize: 20, fontFamily: 'RussoOne_400Regular', letterSpacing: -0.5 },
+  statusLabel: { color: '#999', fontSize: 9, fontWeight: '800', letterSpacing: 1 },
+  counter: { color: '#fff', fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
   overflow: { color: '#777', fontSize: 9, marginTop: 1 },
   stage: {
     marginTop: 4,
