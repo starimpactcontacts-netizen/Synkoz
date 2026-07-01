@@ -308,16 +308,17 @@ export default function CrowdStage({
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.statusRow}>
-        <View style={[styles.statusDot, phase !== 'idle' && styles.statusDotActive]} />
-        <Text style={styles.statusLabel}>{statusLabel}</Text>
-      </View>
-
-      <Animated.Text style={[styles.counter, { transform: [{ scale: counterPunch }] }]}>{displayCount}</Animated.Text>
-      {phase === 'idle' && overflow > 0 && <Text style={styles.overflow}>+{overflow} more watching</Text>}
-
       <View style={[styles.stage, { width, height: stageHeight }]}>
         <LinearGradient colors={['#1c1320', '#0a0a0c']} style={StyleSheet.absoluteFill} />
+
+        <View style={styles.cornerBadge} pointerEvents="none">
+          <View style={styles.statusRow}>
+            <View style={[styles.statusDot, phase !== 'idle' && styles.statusDotActive]} />
+            <Text style={styles.statusLabel}>{statusLabel}</Text>
+          </View>
+          <Animated.Text style={[styles.counter, { transform: [{ scale: counterPunch }] }]}>{displayCount}</Animated.Text>
+          {phase === 'idle' && overflow > 0 && <Text style={styles.overflow}>+{overflow}</Text>}
+        </View>
 
         <Animated.View
           style={[StyleSheet.absoluteFill, { opacity: crowdOpacity, transform: [{ scale: stageScale }] }]}
@@ -385,14 +386,24 @@ export default function CrowdStage({
 
 const styles = StyleSheet.create({
   wrap: { alignItems: 'center', width: '100%' },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#555' },
+  cornerBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    zIndex: 2,
+    backgroundColor: 'rgba(10,10,12,0.55)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 1 },
+  statusDot: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#555' },
   statusDotActive: { backgroundColor: '#ff3b5c' },
-  statusLabel: { color: '#999', fontSize: 12, fontFamily: 'RussoOne_400Regular', letterSpacing: 1.5 },
-  counter: { color: '#fff', fontSize: 56, fontFamily: 'RussoOne_400Regular', letterSpacing: -1 },
-  overflow: { color: '#777', fontSize: 12, marginTop: 2, marginBottom: 8 },
+  statusLabel: { color: '#999', fontSize: 9, fontFamily: 'RussoOne_400Regular', letterSpacing: 0.8 },
+  counter: { color: '#fff', fontSize: 20, fontFamily: 'RussoOne_400Regular', letterSpacing: -0.5 },
+  overflow: { color: '#777', fontSize: 9, marginTop: 1 },
   stage: {
-    marginTop: 14,
+    marginTop: 4,
     borderRadius: 10,
     overflow: 'hidden',
     borderWidth: 2,

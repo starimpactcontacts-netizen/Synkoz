@@ -133,13 +133,15 @@ export default function RoomScreen({ room, isHost, onBack, roomId, identity }: P
         <Text style={styles.code}>#{room.code}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>{room.title}</Text>
+      <View style={styles.metaRow}>
+        <Text style={styles.title} numberOfLines={1}>{room.title}</Text>
         <View style={styles.prizeRow}>
-          <Ionicons name="gift" size={16} color="#ffd95c" />
+          <Ionicons name="gift" size={12} color="#ffd95c" />
           <Text style={styles.prize}>{room.prize}</Text>
         </View>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scroll}>
         <CrowdStage
           participants={participants}
           isHost={isHost}
@@ -189,18 +191,24 @@ const styles = StyleSheet.create({
   back: { color: '#fff', fontSize: 16 },
   backDisabled: { color: '#555' },
   code: { color: '#888', fontSize: 14, fontWeight: '700', fontFamily: 'RussoOne_400Regular', letterSpacing: 0.5 },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    marginTop: 10,
+  },
   scroll: { alignItems: 'center', paddingBottom: 40 },
   title: {
+    flexShrink: 1,
     color: '#fff',
-    fontSize: 26,
-    marginTop: 16,
-    textAlign: 'center',
+    fontSize: 13,
     fontFamily: 'RussoOne_400Regular',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
-  prizeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, marginBottom: 18 },
-  prize: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  prizeRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  prize: { color: '#fff', fontSize: 12, fontWeight: '700' },
   resultBanner: { marginTop: 22, alignItems: 'center', gap: 12 },
   postButton: {
     backgroundColor: '#fff',

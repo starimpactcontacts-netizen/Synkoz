@@ -32,15 +32,9 @@ function colorFor(name: string): string {
   return NAME_COLORS[h % NAME_COLORS.length];
 }
 
-const SEED: ChatMessage[] = [
-  { id: 'm1', user: 'maya', text: 'good luck everyone 🍀' },
-  { id: 'm2', user: 'deon', text: 'lets gooo' },
-  { id: 'm3', user: 'ari', text: 'hope i win the airpods fr' },
-];
-
 export default function LiveChat({ messages, onSend }: Props) {
   const controlled = messages !== undefined;
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>(SEED);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<ScrollView>(null);
 
@@ -63,8 +57,6 @@ export default function LiveChat({ messages, onSend }: Props) {
       <View style={styles.titleRow}>
         <Ionicons name="chatbubbles" size={16} color="#fff" />
         <Text style={styles.title}>Live chat</Text>
-        <View style={styles.liveDot} />
-        <Text style={styles.liveText}>LIVE</Text>
       </View>
 
       <ScrollView
@@ -120,8 +112,6 @@ const styles = StyleSheet.create({
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 8 },
   title: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#ff3b5c', marginLeft: 4 },
-  liveText: { color: '#ff3b5c', fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
   messages: {
     maxHeight: 220,
     backgroundColor: '#161616',
