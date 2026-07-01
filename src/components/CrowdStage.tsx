@@ -137,6 +137,13 @@ export default function CrowdStage({
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
   }, []);
 
+  // Auto-reset phase to idle after winner is revealed, allowing the next spin
+  useEffect(() => {
+    if (phase !== 'revealed') return;
+    const timer = setTimeout(() => setPhase('idle'), 4000);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
   function punchCounter() {
     counterPunch.setValue(0.8);
     Animated.spring(counterPunch, { toValue: 1, friction: 4, tension: 130, useNativeDriver: true }).start();
